@@ -9,7 +9,7 @@ namespace Shorty\Framework\Routing;
 
 use DI\Container;
 use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\RequestInterface;
 use Shorty\Framework\Routing\Exceptions\HTTPException;
 
 /**
@@ -49,10 +49,10 @@ class Router
     /**
      * Router constructor.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface $request
+     * @param \Psr\Http\Message\RequestInterface $request
      * @param \DI\Container                            $container
      */
-    public function __construct(ServerRequestInterface $request, Container $container)
+    public function __construct(RequestInterface $request, Container $container)
     {
         $this->request = $request;
         $this->container = $container;

@@ -4,6 +4,9 @@
  *
  * @author Edwin Dayot
  */
+
+use Shorty\Framework\Exceptions\FileNotFoundException;
+
 if (!function_exists('app')) {
     function app()
     {
@@ -24,7 +27,7 @@ if (!function_exists('config')) {
         $path = base_dir('../config/' . $name . '.php');
 
         if (!file_exists($path)) {
-            throw new InvalidArgumentException('Config file [' . $name . '] does not exists.');
+            throw new FileNotFoundException('Config file [' . $name . '] does not exists.');
         }
 
         return require $path;

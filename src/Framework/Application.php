@@ -8,8 +8,11 @@
 namespace Shorty\Framework;
 
 use DI\ContainerBuilder;
+use Exception;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\ServerRequest;
+use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
 use Shorty\Framework\Exceptions\FileNotFoundException;
 use Shorty\Framework\Exceptions\Handler;
 use Shorty\Framework\Middlewares\RequestHandler;
@@ -34,9 +37,9 @@ class Application
     /**
      * Custom config.
      *
-     * @var mixed
+     * @var array
      */
-    private $config;
+    private $config = [];
 
     /**
      * Environment object.
@@ -104,12 +107,12 @@ class Application
     /**
      * Application constructor.
      */
-    public function __construct()
+    public function __construct(Request $request = null)
     {
-        $this->config = config('app');
+        $this->setConfig();
         $this->createEnv();
         $this->createContainer();
-        $this->createRequest();
+        $this->createRequest($request);
         $this->registerErrorHandler();
         $this->createRouter();
         $this->registerProviders();
@@ -135,15 +138,8 @@ class Application
      */
     public function run(): void
     {
-        try {
-            $this->handleRequest($this->middlewares);
-            $this->router->build();
-            $this->handleRequest($this->routeMiddlewares);
-            $this->router->run();
-        } catch (\Exception $exception) {
-            $response = $this->container->call([$this->getExceptionHandler(), 'render'], [$exception]);
-            $this->response = $response ?: $this->response;
-        }
+        $this->prepareResponse();
+
         send($this->response);
     }
 
@@ -165,7 +161,7 @@ class Application
     public function addRouteMiddleware(string $name): void
     {
         if (!array_key_exists($name, $this->getConfigRouteMiddlewares())) {
-            throw new \InvalidArgumentException('The middleware [' . $name . '] does not exists.');
+            throw new InvalidArgumentException('The middleware [' . $name . '] does not exists.');
         }
 
         $this->routeMiddlewares[] = $this->getConfigRouteMiddlewares()[$name];
@@ -186,14 +182,15 @@ class Application
     /**
      * Create the request object.
      */
-    private function createRequest(): void
+    private function createRequest(Request $request = null): void
     {
-        if (!$this->request) {
+        if (!$this->request && is_null($request)) {
             $request = ServerRequest::fromGlobals()
                 ->withParsedBody(json_decode(file_get_contents('php://input')));
-            $this->container->set(Request::class, $request);
-            $this->request = $request;
         }
+
+        $this->container->set(Request::class, $request);
+        $this->request = $request;
     }
 
     private function createRouter(): void
@@ -251,8 +248,6 @@ class Application
      */
     private function handleRequest(array $middlewares): void
     {
-        $this->setBaseMiddlewares();
-
         $requestHandler = new RequestHandler($this->container, $middlewares);
 
         $this->response = $requestHandler->handle($this->request);
@@ -329,10 +324,45 @@ class Application
      */
     private function getExceptionHandler(): string
     {
-        if (!class_exists(\App\Exceptions\Handler::class)) {
+        if (!class_exists('\App\Exceptions\Handler')) {
             return Handler::class;
         }
 
-        return \App\Exceptions\Handler::class;
+        return '\App\Exceptions\Handler';
+    }
+
+    /**
+     * Set the config if available
+     */
+    private function setConfig()
+    {
+        if (file_exists(base_dir('../config/app.php'))) {
+            $this->config = config('app');
+        }
+    }
+
+    /**
+     * Prepare the response object.
+     */
+    public function prepareResponse()
+    {
+        try {
+            $this->setBaseMiddlewares();
+            $this->handleRequest($this->middlewares);
+            $this->router->build();
+            $this->handleRequest($this->routeMiddlewares);
+            $this->router->run();
+        } catch (Exception $exception) {
+            $response = $this->container->call([$this->getExceptionHandler(), 'render'], [$exception]);
+            $this->response = $response ?: $this->response;
+        }
+    }
+
+    /**
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function getResponse(): ResponseInterface
+    {
+        return $this->response;
     }
 }

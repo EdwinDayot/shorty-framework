@@ -1,0 +1,28 @@
+{
+  "name": "edwindayot/test-framework",
+  "description": "A test framework",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Edwin Dayot",
+      "email": "dayotedwin@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Shorty\\" : "src/"
+    },
+    "files": [
+      "src/Helpers.php"
+    ]
+  },
+  "require": {
+    "guzzlehttp/psr7": "1.4.2",
+    "php-di/php-di": "6.0.x-dev",
+    "http-interop/response-sender": "1.0.0",
+    "symfony/dotenv": "3.4.x-dev",
+    "filp/whoops": "2.1.12",
+    "symfony/var-dumper": "3.4.x-dev"
+  }
+}

@@ -10,6 +10,7 @@ namespace Shorty\Framework;
 use DI\ContainerBuilder;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\ServerRequest;
+use Shorty\Framework\Exceptions\FileNotFoundException;
 use Shorty\Framework\Exceptions\Handler;
 use Shorty\Framework\Middlewares\RequestHandler;
 use Shorty\Framework\Routing\Router;
@@ -175,9 +176,11 @@ class Application
      */
     private function createEnv(): void
     {
-        $dotEnv = new Dotenv();
-        $dotEnv->load(base_dir('../.env'));
-        $this->env = $dotEnv;
+        if (file_exists(base_dir('../.env'))) {
+            $dotEnv = new Dotenv();
+            $dotEnv->load(base_dir('../.env'));
+            $this->env = $dotEnv;
+        }
     }
 
     /**

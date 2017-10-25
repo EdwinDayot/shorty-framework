@@ -7,6 +7,7 @@
 
 namespace Shorty\Framework;
 
+use DI\Container;
 use DI\ContainerBuilder;
 use Exception;
 use GuzzleHttp\Psr7\Request;
@@ -154,6 +155,16 @@ class Application
     }
 
     /**
+     * Add a base middleware to the list of executed middlewares.
+     *
+     * @param string $name
+     */
+    public function addBaseMiddleware(string $name): void
+    {
+        $this->middlewares[] = $name;
+    }
+
+    /**
      * Add a route middleware to the list of executed middlewares.
      *
      * @param string $name
@@ -172,9 +183,9 @@ class Application
      */
     private function createEnv(): void
     {
-        if (file_exists(base_dir('../.env'))) {
+        if (file_exists(base_dir('.env'))) {
             $dotEnv = new Dotenv();
-            $dotEnv->load(base_dir('../.env'));
+            $dotEnv->load(base_dir('.env'));
             $this->env = $dotEnv;
         }
     }
@@ -336,7 +347,7 @@ class Application
      */
     private function setConfig()
     {
-        if (file_exists(base_dir('../config/app.php'))) {
+        if (file_exists(base_dir('config/app.php'))) {
             $this->config = config('app');
         }
     }
@@ -368,5 +379,13 @@ class Application
         }
 
         return $this->response;
+    }
+
+    /**
+     * @return \DI\Container
+     */
+    public function getContainer(): Container
+    {
+        return $this->container;
     }
 }

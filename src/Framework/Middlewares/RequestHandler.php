@@ -76,7 +76,7 @@ class RequestHandler implements RequestHandlerInterface
 
         ++$this->index;
 
-        $response = $this->container->get($this->middlewares[$current])->process($request, $this);
+        $response = $this->container->call([$this->middlewares[$current], 'process'], [$request, $this]);
 
         return $response;
     }

@@ -3,4 +3,4 @@ php:
   - '7.1'
   - nightly
 install:
-  script: composer install
+  - composer install

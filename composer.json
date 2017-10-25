@@ -18,6 +18,7 @@
     ]
   },
   "require": {
+    "php": "^7.1",
     "guzzlehttp/psr7": "1.4.2",
     "php-di/php-di": "6.0.x-dev",
     "http-interop/response-sender": "1.0.0",

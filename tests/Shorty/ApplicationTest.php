@@ -16,12 +16,34 @@ use Shorty\Framework\Application;
 class ApplicationTest extends TestCase
 {
 
+    /**
+     * Test the basic application
+     */
     public function testBasicRun()
     {
         $request = new Request('GET', '/posts');
 
         $application = new Application($request);
-        $application->prepareResponse();
+
+        $router = $application->getRouter();
+        $router->get('posts', function () {
+            return 'posts';
+        });
+
+        $response = $application->getResponse();
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('posts', (string) $response->getBody());
+    }
+
+    /**
+     * Test for the NotFoundException
+     */
+    public function testNotFoundRun()
+    {
+        $request = new Request('GET', '/posts');
+
+        $application = new Application($request);
         $response = $application->getResponse();
 
         $this->assertEquals(404, $response->getStatusCode());

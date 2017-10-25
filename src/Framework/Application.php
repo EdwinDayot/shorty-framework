@@ -351,7 +351,7 @@ class Application
             $this->handleRequest($this->middlewares);
             $this->router->build();
             $this->handleRequest($this->routeMiddlewares);
-            $this->router->run();
+            $this->response = $this->router->run();
         } catch (Exception $exception) {
             $response = $this->container->call([$this->getExceptionHandler(), 'render'], [$exception]);
             $this->response = $response ?: $this->response;
@@ -363,6 +363,10 @@ class Application
      */
     public function getResponse(): ResponseInterface
     {
+        if (!$this->response) {
+            $this->prepareResponse();
+        }
+
         return $this->response;
     }
 }

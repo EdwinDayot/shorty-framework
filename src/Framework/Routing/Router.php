@@ -83,10 +83,12 @@ class Router
 
     /**
      * Run the pending action.
+     *
+     * @return Response
      */
-    public function run()
+    public function run(): Response
     {
-        $this->triggerAction($this->pendingAction);
+        return $this->triggerAction($this->pendingAction);
     }
 
     /**
@@ -147,9 +149,9 @@ class Router
     private function triggerAction($action): Response
     {
         if (is_callable($action)) {
-            $result = $this->container->call($action);
-
-            return $this->returnResponse($result);
+            return $this->returnResponse(
+                $this->container->call($action)
+            );
         } elseif (is_array($action)) {
             return $this->returnResponse(
                 $this->container->call(
@@ -168,7 +170,7 @@ class Router
     /**
      * Returns a Response object.
      *
-     * @param $result
+     * @param mixed $result
      *
      * @return \GuzzleHttp\Psr7\Response|string
      */

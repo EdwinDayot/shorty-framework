@@ -190,42 +190,18 @@ class Router
     /**
      * Matches the URI and route.
      *
-     * @param $uri
-     * @param $routeUri
+     * @param string $uri
+     * @param string $routeUri
      *
      * @return array|null
      */
-    private function match($uri, $routeUri): ?array
+    private function match(string $uri, string $routeUri): ?array
     {
         if ($uri === $routeUri) {
             return [];
         }
 
-        if (preg_match_all('/({[a-z]+:)/i', $routeUri, $matches)) {
-            $regex = str_replace('/', '\/',
-                str_replace('}', ')',
-                    preg_replace('/{([a-z]+):/i', '(?<$1>', $routeUri)
-                )
-            );
-
-            if (preg_match_all('/' . $regex . '/', $uri, $uriMatches)) {
-                $uriMatches = array_filter($uriMatches, function ($key) {
-                    if (is_string($key)) {
-                        return true;
-                    }
-
-                    return false;
-                }, ARRAY_FILTER_USE_KEY);
-
-                $uriMatches = array_map(function ($match) {
-                    return $match[0];
-                }, $uriMatches);
-
-                return $uriMatches;
-            }
-        }
-
-        return null;
+        return $this->getArguments($uri, $routeUri);
     }
 
     /**
@@ -270,5 +246,55 @@ class Router
         }
 
         return false;
+    }
+
+    /**
+     * Matches the URI.
+     *
+     * @param string $regex
+     * @param string $uri
+     * @return array|null
+     */
+    private function matchUri(string $regex, string $uri): ?array
+    {
+        if (preg_match_all('/' . $regex . '/', $uri, $uriMatches)) {
+            $uriMatches = array_filter($uriMatches, function ($key) {
+                if (is_string($key)) {
+                    return true;
+                }
+
+                return false;
+            }, ARRAY_FILTER_USE_KEY);
+
+            $uriMatches = array_map(function ($match) {
+                return $match[0];
+            }, $uriMatches);
+
+            return $uriMatches;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the arguments for the requested URI.
+     *
+     * @param string $uri
+     * @param string $routeUri
+     * @return array|null
+     */
+    private function getArguments(string $uri, string $routeUri): ?array
+    {
+        if (preg_match_all('/({[a-z]+:)/i', $routeUri, $matches)) {
+            $regex = str_replace('/', '\/',
+                str_replace('}', ')',
+                    preg_replace('/{([a-z]+):/i', '(?<$1>', $routeUri)
+                )
+            );
+
+            return $this->matchUri($regex, $uri);
+        }
+
+        return null;
     }
 }
